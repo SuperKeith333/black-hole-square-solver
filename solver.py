@@ -1,12 +1,22 @@
+class memGrid:
+    def __init__(self, grid: list[int], possible_grids: list[list], grids_chosen: list[int], parent_memGrid) -> None:
+        self.grid = grid
+        self.possible_grids = possible_grids
+        self.grids_chosen = grids_chosen
+        self.parent_memGrid = parent_memGrid
+        self.children = []
+
 GRID = [0, 0, 0, 0, 0, 0,
-        0, 0, 0, 4, 0, 0,
-        0, 0, 0, 3, 0, 0,
-        0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0,
+        0, 0, 6, 0, 6, 1,
+        0, 0, 5, 0, 5, 0,
+        0, 0, 0, 0, 0, 1,
+        0, 0, 1, 0, 1, 0,
         0, 0, 0, 0, 0, 0]
 
 INTERACTALBE = [3, 4, 5, 6, 7, 8]
 COL6 = [5, 11, 17, 23, 29, 35]
+
+original_grid: memGrid
 
 def move_up(grid: list[int], index: int) -> list[int]:
     local_grid = grid.copy()
@@ -241,12 +251,15 @@ def solve(grid: list[int]):
     solved = False
     local_grid = grid.copy()
 
+    original_grid = memGrid(local_grid.copy(), [], [], None)
+    current_grid = original_grid
+
     while (not solved):
         step_grids: list[list] = []
         step_grids_scores: list[int] = []
 
         num_index = 0
-        for num in GRID:
+        for num in local_grid:
             if num in INTERACTALBE:
                 match num:
                     case 3:
@@ -285,14 +298,49 @@ def solve(grid: list[int]):
 
             index += 1
 
-        prev_highest_score = -100000000
-        for score in step_grids_scores:
-            if score > prev_highest_score:
-                prev_highest_score = score
+        paired_list = zip(step_grids_scores, step_grids)
+        sorted_paired_list = sorted(paired_list, reverse=True)
+        sorted_step_grids_scores, sorted_step_grids = zip(*sorted_paired_list)
+        step_grids = list(sorted_step_grids)
+        step_grids_scores = list(sorted_step_grids_scores)
 
-        print(str(step_grids_scores[step_grids_scores.index(prev_highest_score)]))
+        step_grids_scores.sort(reverse=True)
 
-        solved = True
+        print(str(step_grids_scores[0]))
+
+        if step_grids_scores[0] >= 100:
+            solved = True
+
+        if not solved:
+            if current_grid.parent_memGrid and current_grid.parent_memGrid.grid == current_grid.grid or current_grid.grids_chosen.count == current_grid.possible_grids.count:
+                current_grid = current_grid.parent_memGrid
+                local_grid = current_grid.grid.copy()
+            else:
+                current_grid.possible_grids = step_grids.copy()
+                chosen_grid = 0
+                if len(current_grid.grids_chosen) > 1:
+                    has_chose_grid = False
+
+                    while (has_chose_grid == False):
+                        chosen_grid += 1
+                        if chosen_grid in current_grid.grids_chosen:
+                            has_chose_grid = True
+                        if chosen_grid >= len(current_grid.possible_grids) and current_grid.parent_memGrid:
+                            has_chose_grid = True
+                            current_grid = current_grid.parent_memGrid
+                            local_grid = current_grid.grid.copy()
+                            chosen_grid = -1
+                        elif not current_grid.parent_memGrid:
+                            print("Failed to finish")
+                            break
+
+                if chosen_grid is not -1:
+                    current_grid.grids_chosen.append(chosen_grid)
+
+                    new_grid = memGrid(step_grids[chosen_grid].copy(), [], [], current_grid)
+                    current_grid = new_grid
+
+                    local_grid = step_grids[chosen_grid].copy()
     
 
 solve(GRID)
