@@ -7,11 +7,11 @@ class memGrid:
         self.children = []
 
 GRID = [0, 0, 0, 0, 0, 0,
-        0, 0, 6, 0, 6, 1,
-        0, 0, 5, 0, 5, 0,
-        0, 0, 0, 0, 0, 1,
-        0, 0, 1, 0, 1, 0,
-        0, 0, 0, 0, 0, 0]
+        0, 0, 0, 6, 0, 0,
+        0, 1, 2, 5, 0, 0,
+        0, 0, 0, 7, 2, 1,
+        0, 0, 0, 4, 0, 0,
+        0, 0, 0, 1, 0, 0]
 
 INTERACTALBE = [3, 4, 5, 6, 7, 8]
 COL6 = [5, 11, 17, 23, 29, 35]
@@ -82,9 +82,9 @@ def move_right(grid: list[int], index: int) -> list[int]:
         if local_grid[index + 1] == 0:
             local_grid[index + 1] = local_grid[index]
             local_grid[index] = 0
-        elif local_grid[index + 1] == 0:
+        elif local_grid[index + 1] == 1:
             local_grid[index] = 0
-        elif index + 1 not in COL6:
+        else:
             if local_grid[index + 2] == 0:
                 local_grid[index + 2] = local_grid[index + 1]
                 local_grid[index + 1] = local_grid[index]
@@ -259,6 +259,7 @@ def solve(grid: list[int]):
         step_grids_scores: list[int] = []
 
         num_index = 0
+        interacted = False
         for num in local_grid:
             if num in INTERACTALBE:
                 match num:
@@ -283,13 +284,14 @@ def solve(grid: list[int]):
         for step_grid in step_grids:
             score = 100
             for n in step_grid:
-                if n in INTERACTALBE:
+                if n is not 0 and n is not 1:
                     score -= 10
             
             step_grids_scores.append(score)
 
         index = 0
         for grid in step_grids:
+            print("GRIDS")
             print(str(step_grids_scores[index]))
             print("------")
             for y in range(6):
@@ -300,13 +302,22 @@ def solve(grid: list[int]):
 
         paired_list = zip(step_grids_scores, step_grids)
         sorted_paired_list = sorted(paired_list, reverse=True)
-        sorted_step_grids_scores, sorted_step_grids = zip(*sorted_paired_list)
+        if sorted_paired_list:
+            sorted_step_grids_scores, sorted_step_grids = zip(*sorted_paired_list)
         step_grids = list(sorted_step_grids)
         step_grids_scores = list(sorted_step_grids_scores)
 
         step_grids_scores.sort(reverse=True)
+        
 
+        print("CHOSEN GRID")
         print(str(step_grids_scores[0]))
+        print("------")
+        for y in range(6):
+            print(str(step_grids[0][0 + (y * 6)]) + ", " + str(step_grids[0][1 + (y * 6)]) + ", " + str(step_grids[0][2 + (y * 6)]) + ", " + str(step_grids[0][3 + (y * 6)]) + ", " + str(step_grids[0][4 + (y * 6)]) + ", " + str(step_grids[0][5 + (y * 6)]) + ",")
+        print("------")
+        
+        print("NEW STEP")
 
         if step_grids_scores[0] >= 100:
             solved = True
@@ -323,7 +334,7 @@ def solve(grid: list[int]):
 
                     while (has_chose_grid == False):
                         chosen_grid += 1
-                        if chosen_grid in current_grid.grids_chosen:
+                        if chosen_grid not in current_grid.grids_chosen:
                             has_chose_grid = True
                         if chosen_grid >= len(current_grid.possible_grids) and current_grid.parent_memGrid:
                             has_chose_grid = True
@@ -338,6 +349,7 @@ def solve(grid: list[int]):
                     current_grid.grids_chosen.append(chosen_grid)
 
                     new_grid = memGrid(step_grids[chosen_grid].copy(), [], [], current_grid)
+                    current_grid.children.append(new_grid)
                     current_grid = new_grid
 
                     local_grid = step_grids[chosen_grid].copy()
