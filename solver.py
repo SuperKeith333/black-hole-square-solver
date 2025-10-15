@@ -7,11 +7,12 @@ class memGrid:
         self.children = []
 
 GRID = [0, 0, 0, 0, 0, 0,
-        0, 0, 0, 6, 0, 0,
-        0, 1, 2, 5, 0, 0,
-        0, 0, 0, 7, 2, 1,
-        0, 0, 0, 4, 0, 0,
-        0, 0, 0, 1, 0, 0]
+        0, 0, 1, 0, 0, 0,
+        0, 5, 2, 0, 0, 0,
+        0, 0, 3, 7, 0, 0,
+        0, 1, 2, 3, 7, 0,
+        0, 0, 4, 0, 0, 0]
+MAX_MOVES = 11
 
 INTERACTALBE = [3, 4, 5, 6, 7, 8]
 COL6 = [5, 11, 17, 23, 29, 35]
@@ -253,13 +254,13 @@ def solve(grid: list[int]):
 
     original_grid = memGrid(local_grid.copy(), [], [], None)
     current_grid = original_grid
+    moves_played = 0
 
     while (not solved):
         step_grids: list[list] = []
         step_grids_scores: list[int] = []
 
         num_index = 0
-        interacted = False
         for num in local_grid:
             if num in INTERACTALBE:
                 match num:
@@ -323,36 +324,46 @@ def solve(grid: list[int]):
             solved = True
 
         if not solved:
-            if current_grid.parent_memGrid and current_grid.parent_memGrid.grid == current_grid.grid or current_grid.grids_chosen.count == current_grid.possible_grids.count:
+            if moves_played <= MAX_MOVES:
+                if current_grid.parent_memGrid and current_grid.parent_memGrid.grid == current_grid.grid or current_grid.grids_chosen.count == current_grid.possible_grids.count:
+                    current_grid = current_grid.parent_memGrid
+                    local_grid = current_grid.grid.copy()
+                    moves_played -= 1
+                else:
+                    current_grid.possible_grids = step_grids.copy()
+                    chosen_grid = 0
+                    if len(current_grid.grids_chosen) > 1:
+                        has_chose_grid = False
+
+                        while (has_chose_grid == False):
+                            chosen_grid += 1
+                            if chosen_grid not in current_grid.grids_chosen:
+                                has_chose_grid = True
+                            if chosen_grid >= len(current_grid.possible_grids) and current_grid.parent_memGrid:
+                                has_chose_grid = True
+                                current_grid = current_grid.parent_memGrid
+                                local_grid = current_grid.grid.copy()
+                                chosen_grid = -1
+                                moves_played -= 1
+                            elif not current_grid.parent_memGrid:
+                                print("Failed to finish")
+                                break
+
+                    if chosen_grid is not -1:
+                        current_grid.grids_chosen.append(chosen_grid)
+
+                        new_grid = memGrid(step_grids[chosen_grid].copy(), [], [], current_grid)
+                        current_grid.children.append(new_grid)
+                        current_grid = new_grid
+
+                        local_grid = step_grids[chosen_grid].copy()
+                        moves_played += 1
+            else:
                 current_grid = current_grid.parent_memGrid
                 local_grid = current_grid.grid.copy()
-            else:
-                current_grid.possible_grids = step_grids.copy()
-                chosen_grid = 0
-                if len(current_grid.grids_chosen) > 1:
-                    has_chose_grid = False
+                chosen_grid = -1
+                moves_played -= 1
 
-                    while (has_chose_grid == False):
-                        chosen_grid += 1
-                        if chosen_grid not in current_grid.grids_chosen:
-                            has_chose_grid = True
-                        if chosen_grid >= len(current_grid.possible_grids) and current_grid.parent_memGrid:
-                            has_chose_grid = True
-                            current_grid = current_grid.parent_memGrid
-                            local_grid = current_grid.grid.copy()
-                            chosen_grid = -1
-                        elif not current_grid.parent_memGrid:
-                            print("Failed to finish")
-                            break
-
-                if chosen_grid is not -1:
-                    current_grid.grids_chosen.append(chosen_grid)
-
-                    new_grid = memGrid(step_grids[chosen_grid].copy(), [], [], current_grid)
-                    current_grid.children.append(new_grid)
-                    current_grid = new_grid
-
-                    local_grid = step_grids[chosen_grid].copy()
     
 
 solve(GRID)
