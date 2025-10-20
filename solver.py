@@ -1,3 +1,5 @@
+import time
+
 class memGrid:
     def __init__(self, grid: list[int], possible_grids: list[list], grids_chosen: list[int], parent_memGrid) -> None:
         self.grid = grid
@@ -290,9 +292,14 @@ def solve(grid: list[int]):
             
             step_grids_scores.append(score)
 
+        print("PARENT GRID")
+        for y in range(6):
+            print(str(current_grid.grid[0 + (y * 6)]) + ", " + str(current_grid.grid[1 + (y * 6)]) + ", " + str(current_grid.grid[2 + (y * 6)]) + ", " + str(current_grid.grid[3 + (y * 6)]) + ", " + str(current_grid.grid[4 + (y * 6)]) + ", " + str(current_grid.grid[5 + (y * 6)]) + ",")
+
+
         index = 0
+        print("POSSIBLE GRIDS")
         for grid in step_grids:
-            print("GRIDS")
             print(str(step_grids_scores[index]))
             print("------")
             for y in range(6):
@@ -301,27 +308,18 @@ def solve(grid: list[int]):
 
             index += 1
 
-        paired_list = zip(step_grids_scores, step_grids)
-        sorted_paired_list = sorted(paired_list, reverse=True)
-        if sorted_paired_list:
-            sorted_step_grids_scores, sorted_step_grids = zip(*sorted_paired_list)
-        step_grids = list(sorted_step_grids)
-        step_grids_scores = list(sorted_step_grids_scores)
+        if step_grids:
+            paired_list = zip(step_grids_scores, step_grids)
+            sorted_paired_list = sorted(paired_list, reverse=True)
+            if sorted_paired_list:
+                sorted_step_grids_scores, sorted_step_grids = zip(*sorted_paired_list)
+            step_grids = list(sorted_step_grids)
+            step_grids_scores = list(sorted_step_grids_scores)
 
-        step_grids_scores.sort(reverse=True)
-        
+            step_grids_scores.sort(reverse=True)
 
-        print("CHOSEN GRID")
-        print(str(step_grids_scores[0]))
-        print("------")
-        for y in range(6):
-            print(str(step_grids[0][0 + (y * 6)]) + ", " + str(step_grids[0][1 + (y * 6)]) + ", " + str(step_grids[0][2 + (y * 6)]) + ", " + str(step_grids[0][3 + (y * 6)]) + ", " + str(step_grids[0][4 + (y * 6)]) + ", " + str(step_grids[0][5 + (y * 6)]) + ",")
-        print("------")
-        
-        print("NEW STEP")
-
-        if step_grids_scores[0] >= 100:
-            solved = True
+            if step_grids_scores[0] >= 100 and moves_played < MAX_MOVES:
+                solved = True
 
         if not solved:
             if moves_played <= MAX_MOVES:
@@ -332,22 +330,59 @@ def solve(grid: list[int]):
                 else:
                     current_grid.possible_grids = step_grids.copy()
                     chosen_grid = 0
-                    if len(current_grid.grids_chosen) > 1:
-                        has_chose_grid = False
+                    has_chose_grid = False
 
-                        while (has_chose_grid == False):
+                    while (not has_chose_grid):
+                        grid_in_children = False
+                        if not current_grid.possible_grids:
+                            has_chose_grid = True
+                            current_grid = current_grid.parent_memGrid
+                            local_grid = current_grid.grid.copy()
+                            chosen_grid = -1
+                            moves_played -= 1
+                        if chosen_grid < len(current_grid.possible_grids):
+                            for grid in current_grid.children:
+                                if grid.grid == current_grid.possible_grids[chosen_grid]:
+                                    grid_in_children = True
+                        if chosen_grid not in current_grid.grids_chosen and not grid_in_children:
+                            has_chose_grid = True
+                        if chosen_grid >= len(current_grid.possible_grids) and current_grid.parent_memGrid:
+                            has_chose_grid = True
+                            current_grid = current_grid.parent_memGrid
+                            local_grid = current_grid.grid.copy()
+                            chosen_grid = -1
+                            moves_played -= 1
+                        
+                        if not has_chose_grid:
                             chosen_grid += 1
-                            if chosen_grid not in current_grid.grids_chosen:
-                                has_chose_grid = True
-                            if chosen_grid >= len(current_grid.possible_grids) and current_grid.parent_memGrid:
-                                has_chose_grid = True
-                                current_grid = current_grid.parent_memGrid
-                                local_grid = current_grid.grid.copy()
-                                chosen_grid = -1
-                                moves_played -= 1
-                            elif not current_grid.parent_memGrid:
-                                print("Failed to finish")
-                                break
+
+                    # if len(current_grid.grids_chosen) > 1:
+                    #     has_chose_grid = False
+
+                    #     while (has_chose_grid == False):
+                    #         chosen_grid += 1
+                    #         grid_in_children = False
+                    #         if chosen_grid < len(current_grid.possible_grids):
+                    #             for grid in current_grid.children:
+                    #                 if grid.grid == current_grid.possible_grids[current_grid]:
+                    #                     grid_in_children = True
+                    #         if chosen_grid not in current_grid.grids_chosen and not grid_in_children:
+                    #             has_chose_grid = True
+                    #         if chosen_grid >= len(current_grid.possible_grids) and current_grid.parent_memGrid:
+                    #             has_chose_grid = True
+                    #             current_grid = current_grid.parent_memGrid
+                    #             local_grid = current_grid.grid.copy()
+                    #             chosen_grid = -1
+                    #             moves_played -= 1
+                    #         elif not current_grid.parent_memGrid:
+                    #             print("Failed to finish")
+                    #             break
+                    # else:
+                    #     current_grid = current_grid.parent_memGrid
+                    #     local_grid = current_grid.grid.copy()
+                    #     chosen_grid = -1
+                    #     moves_played -= 1
+
 
                     if chosen_grid is not -1:
                         current_grid.grids_chosen.append(chosen_grid)
@@ -361,8 +396,22 @@ def solve(grid: list[int]):
             else:
                 current_grid = current_grid.parent_memGrid
                 local_grid = current_grid.grid.copy()
-                chosen_grid = -1
                 moves_played -= 1
+
+        print("CHOSEN GRID")
+        score = 100
+        for n in step_grid:
+            if n is not 0 and n is not 1:
+                score -= 10
+        print(str(score))
+        print("------")
+        for y in range(6):
+            print(str(current_grid.grid[0 + (y * 6)]) + ", " + str(current_grid.grid[1 + (y * 6)]) + ", " + str(current_grid.grid[2 + (y * 6)]) + ", " + str(current_grid.grid[3 + (y * 6)]) + ", " + str(current_grid.grid[4 + (y * 6)]) + ", " + str(current_grid.grid[5 + (y * 6)]) + ",")
+        print("------")
+        print("Moves Played: " + str(moves_played))
+
+        print("NEW STEP")
+
 
     
 
