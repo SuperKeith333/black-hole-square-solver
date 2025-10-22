@@ -8,12 +8,12 @@ class memory_grid:
         self.played = False
 
 GRID = [0, 0, 0, 0, 0, 0,
-        0, 0, 1, 0, 0, 0,
-        0, 5, 2, 0, 0, 0,
-        0, 0, 3, 7, 0, 0,
-        0, 1, 2, 3, 7, 0,
-        0, 0, 4, 0, 0, 0]
-MAX_MOVES = 11
+        0, 6, 0, 0, 0, 0,
+        0, 5, 3, 3, 7, 0,
+        0, 0, 0, 0, 8, 0,
+        0, 0, 0, 0, 4, 0,
+        0, 0, 0, 0, 0, 0]
+MAX_MOVES = 12
 
 INTERACTALBE = [3, 4, 5, 6, 7, 8]
 COL0 = [0, 6, 12, 18, 24, 30]
@@ -82,9 +82,9 @@ def move_left(grid, index) -> tuple:
         index_to_check = 0
         finished = False
         while not finished:
-            if possible_grid[index - 1 - index_to_check] != 0 and possible_grid[index - 1 - index_to_check] != 1:
+            if index - 1 - index_to_check <= 35 and possible_grid[index - 1 - index_to_check] != 0 and possible_grid[index - 1 - index_to_check] != 1:
                 index_to_check += 1
-            else:
+            elif index - 1 - index_to_check <= 35:
                 if possible_grid[index - 1 - index_to_check] == 0:
                     for j in reversed(range(index_to_check + 1)):
                         possible_grid[index - 1 - j] = possible_grid[index - j]
@@ -100,6 +100,8 @@ def move_left(grid, index) -> tuple:
                         possible_grid[index] = 0
 
                     finished = True
+            else:
+                finished = True
 
     return tuple(possible_grid)
 def move_right(grid, index) -> tuple:
@@ -109,9 +111,9 @@ def move_right(grid, index) -> tuple:
         index_to_check = 0
         finished = False
         while not finished:
-            if possible_grid[index + 1 + index_to_check] != 0 and possible_grid[index + 1 + index_to_check] != 1:
+            if index + 1 + index_to_check <= 35 and possible_grid[index + 1 + index_to_check] != 0 and possible_grid[index + 1 + index_to_check] != 1:
                 index_to_check += 1
-            else:
+            elif index + 1 + index_to_check <= 35:
                 if possible_grid[index + 1 + index_to_check] == 0:
                     for j in reversed(range(index_to_check + 1)):
                         possible_grid[index + 1 + j] = possible_grid[index + j]
@@ -127,6 +129,8 @@ def move_right(grid, index) -> tuple:
                         possible_grid[index] = 0
 
                     finished = True
+            else:
+                finished = True
 
     return tuple(possible_grid)
 
@@ -181,9 +185,6 @@ def solve(grid: list[int]):
         if len(current_grid.possible_grids.keys()) > 0 and list(current_grid.possible_grids.keys())[0] >= 100:
             solved_grid = True
         else:
-            # current_grid = list(current_grid.possible_grids.values())[0]
-            # current_grid.played = True
-
             if moves_played < MAX_MOVES:
                 selected_grid = False
                 
