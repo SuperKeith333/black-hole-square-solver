@@ -77,7 +77,6 @@ def move_up(grid: list[int], index: int) -> list[int]:
 
 
     return local_grid
-
 def move_right(grid: list[int], index: int) -> list[int]:
     local_grid = grid.copy()
 
@@ -135,7 +134,6 @@ def move_right(grid: list[int], index: int) -> list[int]:
         
 
     return local_grid
-
 def move_down(grid: list[int], index: int) -> list[int]:
     local_grid = grid.copy()
 
@@ -192,7 +190,6 @@ def move_down(grid: list[int], index: int) -> list[int]:
 
 
     return local_grid
-
 def move_left(grid: list[int], index: int) -> list[int]:
     local_grid = grid.copy()
 
@@ -355,34 +352,6 @@ def solve(grid: list[int]):
                         
                         if not has_chose_grid:
                             chosen_grid += 1
-
-                    # if len(current_grid.grids_chosen) > 1:
-                    #     has_chose_grid = False
-
-                    #     while (has_chose_grid == False):
-                    #         chosen_grid += 1
-                    #         grid_in_children = False
-                    #         if chosen_grid < len(current_grid.possible_grids):
-                    #             for grid in current_grid.children:
-                    #                 if grid.grid == current_grid.possible_grids[current_grid]:
-                    #                     grid_in_children = True
-                    #         if chosen_grid not in current_grid.grids_chosen and not grid_in_children:
-                    #             has_chose_grid = True
-                    #         if chosen_grid >= len(current_grid.possible_grids) and current_grid.parent_memGrid:
-                    #             has_chose_grid = True
-                    #             current_grid = current_grid.parent_memGrid
-                    #             local_grid = current_grid.grid.copy()
-                    #             chosen_grid = -1
-                    #             moves_played -= 1
-                    #         elif not current_grid.parent_memGrid:
-                    #             print("Failed to finish")
-                    #             break
-                    # else:
-                    #     current_grid = current_grid.parent_memGrid
-                    #     local_grid = current_grid.grid.copy()
-                    #     chosen_grid = -1
-                    #     moves_played -= 1
-
 
                     if chosen_grid is not -1:
                         current_grid.grids_chosen.append(chosen_grid)
