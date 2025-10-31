@@ -1,4 +1,4 @@
-import time
+import time, psutil, os
 
 class memory_grid:
     def __init__(self):
@@ -6,14 +6,15 @@ class memory_grid:
         self.grid = ()
         self.parent_memory_grid = None
         self.played = False
+        self.exhausted = False
 
 GRID = [0, 0, 0, 0, 0, 0,
-        0, 6, 0, 0, 0, 0,
-        0, 5, 3, 3, 7, 0,
-        0, 0, 0, 0, 8, 0,
-        0, 0, 0, 0, 4, 0,
+        0, 0, 1, 0, 0, 0,
+        0, 5, 6, 0, 0, 0,
+        0, 0, 0, 4, 7, 0,
+        0, 0, 0, 1, 0, 0,
         0, 0, 0, 0, 0, 0]
-MAX_MOVES = 12
+MAX_MOVES = 6
 
 INTERACTALBE = [3, 4, 5, 6, 7, 8]
 COL0 = [0, 6, 12, 18, 24, 30]
@@ -26,9 +27,9 @@ def move_up(grid, index) -> tuple:
         index_to_check = 0
         finished = False
         while not finished:
-            if possible_grid[(index - 6) - (6 * index_to_check)] != 0 and possible_grid[(index - 6) - (6 * index_to_check)] != 1:
+            if (index - 6) - (6 * index_to_check) <= 35 and (index - 6) - (6 * index_to_check) >= 0 and possible_grid[(index - 6) - (6 * index_to_check)] != 0 and possible_grid[(index - 6) - (6 * index_to_check)] != 1:
                 index_to_check += 1
-            else:
+            elif (index - 6) - (6 * index_to_check) <= 35 and (index - 6) - (6 * index_to_check) >= 0:
                 if possible_grid[(index - 6) - (6 * index_to_check)] == 0:
                     for j in reversed(range(index_to_check + 1)):
                         possible_grid[(index - 6) - (6 * j)] = possible_grid[index - (6 * (j))]
@@ -44,6 +45,8 @@ def move_up(grid, index) -> tuple:
                         possible_grid[index] = 0
 
                     finished = True
+            else:
+                finished = True
 
     return tuple(possible_grid)
 def move_down(grid, index) -> tuple:
@@ -134,6 +137,10 @@ def move_right(grid, index) -> tuple:
 
     return tuple(possible_grid)
 
+def mem_usage():
+    process = psutil.Process(os.getpid())
+    return process.memory_info().rss / 1024 / 1024
+
 def gen_score(grid: tuple) -> int:
     score = 100
     for num in grid:
@@ -190,7 +197,7 @@ def solve(grid: list[int]):
                 
                 for child_grids in current_grid.possible_grids.values():
                     for child_grid in child_grids:
-                        if not child_grid.played:
+                        if not child_grid.played and not child_grid.exhausted:
                             current_grid = child_grid
                             current_grid.played = True
                             selected_grid = True
@@ -199,8 +206,12 @@ def solve(grid: list[int]):
                     if selected_grid:
                         break
                         
+                        
 
                 if not selected_grid:
+                    current_grid.exhausted = True
+                    current_grid.possible_grids.clear()
+                    
                     moves_played -= 2
                     current_grid = current_grid.parent_memory_grid
 
@@ -211,6 +222,7 @@ def solve(grid: list[int]):
         for y in range(6):
             print(str(current_grid.grid[0 + (y * 6)]) + ", " + str(current_grid.grid[1 + (y * 6)]) + ", " + str(current_grid.grid[2 + (y * 6)]) + ", " + str(current_grid.grid[3 + (y * 6)]) + ", " + str(current_grid.grid[4 + (y * 6)]) + ", " + str(current_grid.grid[5 + (y * 6)]) + ",")
         print(moves_played)
+        print(f"Memory usage: {mem_usage():.2f} MB")
 
     end_time = time.perf_counter()
 
